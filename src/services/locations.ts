@@ -1,5 +1,7 @@
 import { Injectable } from "@angular/core";
 import { AngularFireDatabase } from 'angularfire2/database';
+import { Observable } from "rxjs/Observable";
+import { Location } from '../models/location';
 
 @Injectable()
 export class LocationsService {
@@ -9,6 +11,7 @@ export class LocationsService {
     }
 
     getLocations() {
-      return this.db.list('locations').valueChanges();
+      return this.db.list('locations')
+                    .valueChanges();
     }
 }
