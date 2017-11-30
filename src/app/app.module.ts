@@ -14,6 +14,7 @@ import { AngularFireModule } from 'angularfire2';
 import { AngularFireDatabaseModule, AngularFireDatabase } from 'angularfire2/database';
 import { AngularFireAuthModule } from 'angularfire2/auth';
 import { environment } from '../environments/firebase.config';
+import { Geolocation } from '@ionic-native/geolocation';
 
 @NgModule({
   declarations: [
@@ -41,7 +42,8 @@ import { environment } from '../environments/firebase.config';
     StatusBar,
     SplashScreen,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
-    LocationsService
+    LocationsService,
+    Geolocation
   ]
 })
 export class AppModule {}

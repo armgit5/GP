@@ -14,4 +14,8 @@ export class LocationsService {
       return this.db.list('locations')
                     .valueChanges();
     }
+
+    sendLocation(location: Location) {
+
+    }
 }
