@@ -15,12 +15,18 @@ import { AngularFireDatabaseModule, AngularFireDatabase } from 'angularfire2/dat
 import { AngularFireAuthModule } from 'angularfire2/auth';
 import { environment } from '../environments/firebase.config';
 import { Geolocation } from '@ionic-native/geolocation';
+import { SigninPage } from '../pages/signin/signin';
+import { SignupPage } from '../pages/signup/signup';
+import { TabsPage } from '../pages/tabs/tabs';
 
 @NgModule({
   declarations: [
     MyApp,
     HomePage,
-    MapComponent
+    MapComponent,
+    SigninPage,
+    SignupPage,
+    TabsPage
   ],
   imports: [
     BrowserModule,
@@ -36,7 +42,10 @@ import { Geolocation } from '@ionic-native/geolocation';
   entryComponents: [
     MyApp,
     HomePage,
-    MapComponent
+    MapComponent,
+    SigninPage,
+    SignupPage,
+    TabsPage
   ],
   providers: [
     StatusBar,
