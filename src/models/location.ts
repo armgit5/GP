@@ -4,18 +4,10 @@ export class Location {
                 public lat: number,
                 public lng: number,
                 public uid: string,
-                public name: string) {
+                public name: string,
+                public dateTimes: string[]) {
 
     }
 
-     // tslint:disable-next-line:member-ordering
-     static fromJsonList(array): Location[] {
-          return array.map(Location.fromJson);
-      }
-
-      // tslint:disable-next-line:member-ordering
-      static fromJson({$key, lat, lng, uid, name}): Location {
-        return new Location($key, lat, lng, uid, name);
-    }
 }
 
