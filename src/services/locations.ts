@@ -16,6 +16,10 @@ export class LocationsService {
     }
 
     sendLocation(location: Location) {
-
+      console.log('sent ', location);
+      this.db.object(`/timestampedLocations/${location.$key}/${location.dateTime}` ).set({
+        lat: location.lat,
+        lng: location.lng
+      });
     }
 }

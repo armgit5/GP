@@ -18,6 +18,7 @@ import { Geolocation } from '@ionic-native/geolocation';
 import { SigninPage } from '../pages/signin/signin';
 import { SignupPage } from '../pages/signup/signup';
 import { TabsPage } from '../pages/tabs/tabs';
+import { AuthService } from '../services/auth';
 
 @NgModule({
   declarations: [
@@ -52,7 +53,8 @@ import { TabsPage } from '../pages/tabs/tabs';
     SplashScreen,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
     LocationsService,
-    Geolocation
+    Geolocation,
+    AuthService
   ]
 })
 export class AppModule {}

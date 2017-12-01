@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Location } from '../../models/location';
+import { Location, TimeStampedLocation } from '../../models/location';
 import { LocationsService } from '../../services/locations';
 import { LoadingController } from 'ionic-angular';
 import { Geolocation } from '@ionic-native/geolocation';
@@ -26,7 +26,7 @@ export class MapComponent implements OnInit, OnDestroy {
     lng: -73.9759827,
     uid: '',
     name: '',
-    dateTimes: ['']
+    dateTime: 0
   }
 
   locations: Location[];
@@ -84,6 +84,9 @@ export class MapComponent implements OnInit, OnDestroy {
           let lng = position.coords.longitude;
           this.myLocation.lat = lat;
           this.myLocation.lng = lng;
+          this.myLocation.$key = 'fdsakfienksakd';
+          this.myLocation.dateTime = Date.now();
+          this.locationsService.sendLocation(this.myLocation);
         });
   }
 
