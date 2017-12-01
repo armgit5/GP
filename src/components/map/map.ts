@@ -65,6 +65,7 @@ export class MapComponent implements OnInit, OnDestroy {
       (locations: Location[]) => {
         loader.dismiss();
         this.locations = locations;
+        console.log(this.locations);
       }
     );
   }
@@ -98,8 +99,9 @@ export class MapComponent implements OnInit, OnDestroy {
           this.myLocation.lng = lng;
           this.myLocation.$key = this.user.$key;
           this.myLocation.dateTime = Date.now();
+          this.myLocation.uid = this.user.uid;
           // If user is logged in then send info to firebase
-          if (this.user.uid !== null || this.user.uid !== '') {
+          if (this.user.$key !== null || this.user.$key !== '') {
             this.locationsService.sendLocation(this.myLocation);
           }
         });

@@ -1,10 +1,15 @@
 <!-- Generated template for the MapComponent component -->
 
-<agm-map
+<agm-map #gm
 [latitude]="13.5"
 [longitude]="101.32">
   <agm-marker
   *ngFor="let location of locations"
   [latitude]="location.lat"
-  [longitude]="location.lng"></agm-marker>
+  [longitude]="location.lng"
+  >
+    <agm-info-window #infoWindow>
+      <strong>{{location.uid}}</strong>
+    </agm-info-window>
+  </agm-marker>
 </agm-map>
