@@ -6,6 +6,8 @@ import { Geolocation } from '@ionic-native/geolocation';
 import { ToastController } from 'ionic-angular/components/toast/toast-controller';
 import { OnDestroy, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
 import { Subscription } from 'rxjs/Subscription';
+import { AuthService } from '../../services/auth';
+import { User } from '../../models/user';
 
 /**
  * Generated class for the MapComponent component.
@@ -30,14 +32,24 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   locations: Location[];
-
+  user: User;
   $geoLocationWatch: Subscription;
 
   constructor(private locationsService: LocationsService,
               private loadingCtrl: LoadingController,
               private geolocation: Geolocation,
-              private toastCtrl: ToastController) {
+              private toastCtrl: ToastController,
+              private authService: AuthService) {
     this.onLocate();
+
+    this.authService.onUserUpdate.subscribe(
+      (user: User) => {
+        if (user.uid !== null || user.uid !== '') {
+          this.user = user;
+        }
+      }
+    );
+
   }
 
   ngOnInit() {
@@ -84,9 +96,12 @@ export class MapComponent implements OnInit, OnDestroy {
           let lng = position.coords.longitude;
           this.myLocation.lat = lat;
           this.myLocation.lng = lng;
-          this.myLocation.$key = 'fdsakfienksakd';
+          this.myLocation.$key = this.user.$key;
           this.myLocation.dateTime = Date.now();
-          this.locationsService.sendLocation(this.myLocation);
+          // If user is logged in then send info to firebase
+          if (this.user.uid !== null || this.user.uid !== '') {
+            this.locationsService.sendLocation(this.myLocation);
+          }
         });
   }
 

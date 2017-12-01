@@ -21,5 +21,15 @@ export class LocationsService {
         lat: location.lat,
         lng: location.lng
       });
+      this.updateCurrentLocation(location);
+    }
+
+    private updateCurrentLocation(location: Location) {
+      this.db.object(`/locations/${location.$key}`).update({
+        dateTime: location.dateTime,
+        lat: location.lat,
+        lng: location.lng,
+        uid: location.uid
+      });
     }
 }
