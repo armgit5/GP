@@ -8,6 +8,7 @@ import { OnDestroy, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
 import { Subscription } from 'rxjs/Subscription';
 import { AuthService } from '../../services/auth';
 import { User } from '../../models/user';
+import { Point } from '../../models/point';
 
 /**
  * Generated class for the MapComponent component.
@@ -32,8 +33,10 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   locations: Location[];
+  startLoc: Location;
   user: User = new User('', '', '');
   $geoLocationWatch: Subscription;
+  aLine: any[];
 
   constructor(private locationsService: LocationsService,
               private loadingCtrl: LoadingController,
@@ -49,9 +52,19 @@ export class MapComponent implements OnInit, OnDestroy {
         }
       }
     );
-
+    this.getALocationLine('rw07invSPBbGv1oY7hcViS83yrR2');
   }
 
+  private getALocationLine($key: string) {
+    this.locationsService.getALocationLine().subscribe(
+      (points) => {
+        console.log('points');
+        console.log(points);
+        console.log(points[1]);
+        this.aLine = points;
+      }
+    );
+  }
 
   ngOnInit() {
     this.platform.ready().then(() => {
@@ -72,7 +85,8 @@ export class MapComponent implements OnInit, OnDestroy {
       (locations: Location[]) => {
         loader.dismiss();
         this.locations = locations;
-        console.log(this.locations);
+        this.startLoc = locations[0];
+        console.log('this location, ', this.locations);
 
       }
     );

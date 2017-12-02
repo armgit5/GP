@@ -1,15 +1,24 @@
 <!-- Generated template for the MapComponent component -->
 
 <agm-map #gm
-[latitude]="13.5"
-[longitude]="101.32">
+[latitude]="startLoc?.lat"
+[longitude]="startLoc?.lng"
+[zoom]=16>
   <agm-marker
   *ngFor="let location of locations"
   [latitude]="location.lat"
   [longitude]="location.lng"
   >
     <agm-info-window #infoWindow>
-      <strong>{{location.uid}}</strong>
+      <strong>{{location.uid}} {{location.dateTime | date:'short'}}</strong>
     </agm-info-window>
   </agm-marker>
+
+  <agm-polyline>
+    <agm-polyline-point  *ngFor="let data of aLine"
+      [latitude]="data.lat"
+      [longitude]="data.lng">
+    </agm-polyline-point>
+  </agm-polyline>
+
 </agm-map>
