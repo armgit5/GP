@@ -34,7 +34,6 @@ export class SignupPage {
     loading.present();
     this.authService.signup(form.value.email, form.value.password, form.value.uid)
       .then(data => {
-        console.log(data);
         loading.dismiss();
       })
       .catch(error => {

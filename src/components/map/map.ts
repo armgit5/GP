@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { Location, TimeStampedLocation } from '../../models/location';
 import { LocationsService } from '../../services/locations';
-import { LoadingController } from 'ionic-angular';
+import { LoadingController, Platform } from 'ionic-angular';
 import { Geolocation } from '@ionic-native/geolocation';
 import { ToastController } from 'ionic-angular/components/toast/toast-controller';
 import { OnDestroy, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
@@ -32,19 +32,19 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   locations: Location[];
-  user: User;
+  user: User = new User('', '', '');
   $geoLocationWatch: Subscription;
 
   constructor(private locationsService: LocationsService,
               private loadingCtrl: LoadingController,
               private geolocation: Geolocation,
               private toastCtrl: ToastController,
-              private authService: AuthService) {
-    this.onLocate();
+              private authService: AuthService,
+              private platform: Platform) {
 
     this.authService.onUserUpdate.subscribe(
       (user: User) => {
-        if (user.uid !== null || user.uid !== '') {
+        if (user.uid !== '') {
           this.user = user;
         }
       }
@@ -52,11 +52,18 @@ export class MapComponent implements OnInit, OnDestroy {
 
   }
 
+
   ngOnInit() {
-    this.watchPosition();
+    this.platform.ready().then(() => {
+      // Okay, so the platform is ready and our plugins are available.
+      // Here you can do any higher level native things you might need.
+      this.onLocate();
+      this.watchPosition();
+    });
   }
 
   onLocate() {
+    console.log('locate');
     const loader = this.loadingCtrl.create({
       content: 'Getting your Location...'
     });
@@ -66,6 +73,7 @@ export class MapComponent implements OnInit, OnDestroy {
         loader.dismiss();
         this.locations = locations;
         console.log(this.locations);
+
       }
     );
   }
@@ -89,22 +97,28 @@ export class MapComponent implements OnInit, OnDestroy {
   // }
 
   private watchPosition() {
+    console.log('start watch');
     this.$geoLocationWatch = this.geolocation.watchPosition()
         .filter((p) => p.coords !== undefined) //Filter Out Errors
         .subscribe(position => {
           console.log(position.coords.longitude + ' ' + position.coords.latitude);
-          let lat = position.coords.latitude;
-          let lng = position.coords.longitude;
-          this.myLocation.lat = lat;
-          this.myLocation.lng = lng;
-          this.myLocation.$key = this.user.$key;
-          this.myLocation.dateTime = Date.now();
-          this.myLocation.uid = this.user.uid;
-          // If user is logged in then send info to firebase
-          if (this.user.$key !== null || this.user.$key !== '') {
-            this.locationsService.sendLocation(this.myLocation);
-          }
+          this.getLocationAndUpload(position);
         });
+  }
+
+  private getLocationAndUpload(position: Position) {
+    console.log('watched');
+    let lat = position.coords.latitude;
+    let lng = position.coords.longitude;
+    this.myLocation.lat = lat;
+    this.myLocation.lng = lng;
+    this.myLocation.$key = this.user.$key;
+    this.myLocation.dateTime = Date.now();
+    this.myLocation.uid = this.user.uid;
+    // If user is logged in then send info to firebase
+    if (this.user.$key !== '') {
+      this.locationsService.sendLocation(this.myLocation);
+    }
   }
 
   ngOnDestroy() {
