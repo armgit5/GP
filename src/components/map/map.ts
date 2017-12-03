@@ -58,9 +58,9 @@ export class MapComponent implements OnInit, OnDestroy {
   private getALocationLine($key: string) {
     this.locationsService.getALocationLine().subscribe(
       (points) => {
-        console.log('points');
-        console.log(points);
-        console.log(points[1]);
+        // console.log('points');
+        // console.log(points);
+        // console.log(points[1]);
         this.aLine = points;
       }
     );
@@ -76,7 +76,7 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   onLocate() {
-    console.log('locate');
+    // console.log('locate');
     const loader = this.loadingCtrl.create({
       content: 'Getting your Location...'
     });
@@ -111,8 +111,12 @@ export class MapComponent implements OnInit, OnDestroy {
   // }
 
   private watchPosition() {
-    console.log('start watch');
-    this.$geoLocationWatch = this.geolocation.watchPosition()
+    // console.log('start watch');
+    let options = {
+      timeout: 10000,
+      enableHighAccuracy: true
+    };
+    this.$geoLocationWatch = this.geolocation.watchPosition(options)
         .filter((p) => p.coords !== undefined) //Filter Out Errors
         .subscribe(position => {
           console.log(position.coords.longitude + ' ' + position.coords.latitude);

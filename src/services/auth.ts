@@ -10,6 +10,8 @@ export class AuthService {
 
     user: User = new User('','','');
     onUserUpdate = new EventEmitter<User>();
+    // isAuthenticatedUpdate = new EventEmitter<boolean>();
+
     constructor(private afAuth: AngularFireAuth,
                 private db: AngularFireDatabase) {
 
@@ -31,8 +33,6 @@ export class AuthService {
         }
       );
     }
-
-
 
     signup(email: string, password: string, uid: string) {
       return new Promise((resolve, reject) => {
@@ -77,10 +77,12 @@ export class AuthService {
     }
 
     logout() {
+        console.log('logging out');
         this.afAuth.auth.signOut();
         this.user.$key = '';
         this.user.email = '';
         this.user.uid = '';
+        // this.isAuthenticatedUpdate.emit(true);
         this.onUserUpdate.emit(this.user);
     }
 

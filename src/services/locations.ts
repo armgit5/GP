@@ -7,7 +7,7 @@ import { Location } from '../models/location';
 @Injectable()
 export class LocationsService {
 
-    maxLinePoints = 10;
+    maxLinePoints = 50;
 
     constructor(private db: AngularFireDatabase) {
 
@@ -19,18 +19,18 @@ export class LocationsService {
     }
 
     sendLocation(location: Location) {
-      console.log('sent ', location);
+      // console.log('sent ', location);
       let ref = this.db.list(`/timestampedLocations/${location.$key}`);
 
       ref.valueChanges()
       .subscribe(
         points => {
-          console.log(points);
+          // console.log(points);
           if (points.length >= this.maxLinePoints) {
             ref.snapshotChanges(['child_added']).subscribe(
               items => {
-                console.log('child added');
-                console.log(items[0].key);
+                // console.log('child added');
+                // console.log(items[0].key);
                 this.db.object(`/timestampedLocations/${location.$key}/${items[0].key}`).remove();
               }
             );

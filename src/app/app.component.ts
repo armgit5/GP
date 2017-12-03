@@ -17,10 +17,11 @@ import { HomePage } from '../pages/home/home';
   templateUrl: 'app.html'
 })
 export class MyApp {
-  tabsPage = TabsPage;
+  tabsPage: any = TabsPage;
   signinPage = SigninPage;
   signupPage = SignupPage;
   isAuthenticated = false;
+
   @ViewChild('nav') nav: NavController;
 
   constructor(platform: Platform,
@@ -36,12 +37,21 @@ export class MyApp {
       splashScreen.hide();
     });
 
+    if (this.authService.user.$key === '') {
+      this.isAuthenticated = false;
+      this.tabsPage = SigninPage;
+    }
+
     this.authService.onUserUpdate.subscribe(
       (user: User) => {
-        if (user.uid !== null || user.uid !== '') {
+        console.log(user);
+        console.log(user.uid !== '');
+        if (user.uid !== '') {
           this.isAuthenticated = true;
+          this.tabsPage = TabsPage;
         } else {
           this.isAuthenticated = false;
+          this.tabsPage = SigninPage;
         }
       }
     );

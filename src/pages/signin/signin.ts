@@ -3,6 +3,7 @@ import { IonicPage, NavController, NavParams, LoadingController } from 'ionic-an
 import { AuthService } from '../../services/auth';
 import { AlertController } from 'ionic-angular/components/alert/alert-controller';
 import { NgForm } from '@angular/forms/src/directives/ng_form';
+import { HomePage } from '../home/home';
 
 /**
  * Generated class for the SigninPage page.
@@ -35,7 +36,7 @@ export class SigninPage {
     this.authService.signin(form.value.email, form.value.password)
       .then(data => {
         loading.dismiss();
-
+        this.navCtrl.setRoot(HomePage);
       })
       .catch(error => {
         loading.dismiss();
