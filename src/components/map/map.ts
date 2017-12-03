@@ -36,6 +36,8 @@ export class MapComponent implements OnInit, OnDestroy {
   startLoc: Location;
   $geoLocationWatch: Subscription;
   aLine: any[];
+  lastTime = Date.now();
+  step = 10000;
 
   constructor(private locationsService: LocationsService,
               private loadingCtrl: LoadingController,
@@ -56,17 +58,17 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // this.platform.ready().then(() => {
-    //   // Okay, so the platform is ready and our plugins are available.
-    //   // Here you can do any higher level native things you might need.
-    //   this.onLocate();
-    //   this.watchPosition();
-    // });
-    this.onLocate();
-    this.getCurrentPosition();
-    setTimeout(() => {
-      this.getCurrentPosition();
-    }, 10000);
+    this.platform.ready().then(() => {
+      // Okay, so the platform is ready and our plugins are available.
+      // Here you can do any higher level native things you might need.
+      this.onLocate();
+      this.watchPosition();
+    });
+    // this.onLocate();
+    // this.getCurrentPosition();
+    // setTimeout(() => {
+    //   this.getCurrentPosition();
+    // }, 10000);
   }
 
   onLocate() {
@@ -85,34 +87,36 @@ export class MapComponent implements OnInit, OnDestroy {
     );
   }
 
-  private getCurrentPosition() {
-    console.log('get cur position');
-    this.geolocation.getCurrentPosition().then(
-      location => {
-        console.log(location);
-        this.getLocationAndUpload(location);
-    }).catch((error) => {
-      const toast = this.toastCtrl.create({
-        message: 'Could not get location, please pick it manually',
-        duration: 2500
-      });
-      console.log('Error getting location', error);
-      toast.present();
-    });
-  }
-
-  // private watchPosition() {
-  //   let options = {
-  //     timeout: 10000,
-  //     enableHighAccuracy: true
-  //   };
-  //   this.$geoLocationWatch = this.geolocation.watchPosition()
-  //   .filter((p) => p.coords !== undefined) //Filter Out Errors
-  //   .subscribe(position => {
-  //     console.log(position.coords.longitude + ' ' + position.coords.latitude);
-  //     this.getLocationAndUpload(position);
+  // private getCurrentPosition() {
+  //   console.log('get cur position');
+  //   this.count += 1;
+  //   console.log(this.count);
+  //   this.geolocation.getCurrentPosition().then(
+  //     location => {
+  //       // console.log(location);
+  //       this.getLocationAndUpload(location);
+  //   }).catch((error) => {
+  //     const toast = this.toastCtrl.create({
+  //       message: 'Could not get location, please pick it manually',
+  //       duration: 2500
+  //     });
+  //     console.log('Error getting location', error);
+  //     toast.present();
   //   });
   // }
+
+  private watchPosition() {
+    let options = {
+      timeout: 10000,
+      enableHighAccuracy: true
+    };
+    this.$geoLocationWatch = this.geolocation.watchPosition(options)
+    .filter((p) => p.coords !== undefined) //Filter Out Errors
+    .subscribe(position => {
+      console.log(position.coords.longitude + ' ' + position.coords.latitude);
+      this.getLocationAndUpload(position);
+    });
+  }
 
   private getLocationAndUpload(position: Position) {
     let user = this.authService.user;
@@ -124,8 +128,15 @@ export class MapComponent implements OnInit, OnDestroy {
     this.myLocation.dateTime = Date.now();
     this.myLocation.uid = user.uid;
     // If user is logged in then send info to firebase
+
     if (user.$key !== '') {
-      this.locationsService.sendLocation(this.myLocation);
+      let timeNow = Date.now();
+      console.log(timeNow, this.lastTime);
+      if ((timeNow - this.lastTime) >= this.step) {
+        console.log('time ok');
+        this.lastTime = timeNow;
+        this.locationsService.sendLocation(this.myLocation);
+      }
     }
   }
 
