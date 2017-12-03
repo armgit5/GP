@@ -19,9 +19,9 @@ export class LocationsService {
     }
 
     sendLocation(location: Location) {
-      // console.log('sent ', location);
-      let ref = this.db.list(`/timestampedLocations/${location.$key}`);
+      this.updateCurrentLocation(location);
 
+      let ref = this.db.list(`/timestampedLocations/${location.$key}`);
       ref.valueChanges()
       .subscribe(
         points => {
@@ -43,10 +43,6 @@ export class LocationsService {
         lat: location.lat,
         lng: location.lng
       });
-      this.updateCurrentLocation(location);
-    }
-
-    private deletePoint(location: Location, dateTime: string) {
 
     }
 

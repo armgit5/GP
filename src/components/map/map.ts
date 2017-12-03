@@ -34,7 +34,6 @@ export class MapComponent implements OnInit, OnDestroy {
 
   locations: Location[];
   startLoc: Location;
-  user: User = new User('', '', '');
   $geoLocationWatch: Subscription;
   aLine: any[];
 
@@ -45,38 +44,32 @@ export class MapComponent implements OnInit, OnDestroy {
               private authService: AuthService,
               private platform: Platform) {
 
-    this.authService.onUserUpdate.subscribe(
-      (user: User) => {
-        if (user.uid !== '') {
-          this.user = user;
-        }
-      }
-    );
     this.getALocationLine('rw07invSPBbGv1oY7hcViS83yrR2');
   }
 
   private getALocationLine($key: string) {
     this.locationsService.getALocationLine().subscribe(
       (points) => {
-        // console.log('points');
-        // console.log(points);
-        // console.log(points[1]);
         this.aLine = points;
       }
     );
   }
 
   ngOnInit() {
-    this.platform.ready().then(() => {
-      // Okay, so the platform is ready and our plugins are available.
-      // Here you can do any higher level native things you might need.
-      this.onLocate();
-      this.watchPosition();
-    });
+    // this.platform.ready().then(() => {
+    //   // Okay, so the platform is ready and our plugins are available.
+    //   // Here you can do any higher level native things you might need.
+    //   this.onLocate();
+    //   this.watchPosition();
+    // });
+    this.onLocate();
+    this.getCurrentPosition();
+    setTimeout(() => {
+      this.getCurrentPosition();
+    }, 10000);
   }
 
   onLocate() {
-    // console.log('locate');
     const loader = this.loadingCtrl.create({
       content: 'Getting your Location...'
     });
@@ -92,49 +85,46 @@ export class MapComponent implements OnInit, OnDestroy {
     );
   }
 
-  // private getCurrentPosition() {
-  //   this.geolocation.getCurrentPosition().then(
-  //     location => {
+  private getCurrentPosition() {
+    console.log('get cur position');
+    this.geolocation.getCurrentPosition().then(
+      location => {
+        console.log(location);
+        this.getLocationAndUpload(location);
+    }).catch((error) => {
+      const toast = this.toastCtrl.create({
+        message: 'Could not get location, please pick it manually',
+        duration: 2500
+      });
+      console.log('Error getting location', error);
+      toast.present();
+    });
+  }
 
-  //       this.location.lat = location.coords.latitude;
-  //       this.location.lng = location.coords.longitude;
-
-  //       console.log(this.location.lat, this.location.lng);
-  //   }).catch((error) => {
-  //     const toast = this.toastCtrl.create({
-  //       message: 'Could not get location, please pick it manually',
-  //       duration: 2500
-  //     });
-  //     console.log('Error getting location', error);
-  //     toast.present();
+  // private watchPosition() {
+  //   let options = {
+  //     timeout: 10000,
+  //     enableHighAccuracy: true
+  //   };
+  //   this.$geoLocationWatch = this.geolocation.watchPosition()
+  //   .filter((p) => p.coords !== undefined) //Filter Out Errors
+  //   .subscribe(position => {
+  //     console.log(position.coords.longitude + ' ' + position.coords.latitude);
+  //     this.getLocationAndUpload(position);
   //   });
   // }
 
-  private watchPosition() {
-    // console.log('start watch');
-    let options = {
-      timeout: 10000,
-      enableHighAccuracy: true
-    };
-    this.$geoLocationWatch = this.geolocation.watchPosition(options)
-        .filter((p) => p.coords !== undefined) //Filter Out Errors
-        .subscribe(position => {
-          console.log(position.coords.longitude + ' ' + position.coords.latitude);
-          this.getLocationAndUpload(position);
-        });
-  }
-
   private getLocationAndUpload(position: Position) {
-    console.log('watched');
+    let user = this.authService.user;
     let lat = position.coords.latitude;
     let lng = position.coords.longitude;
     this.myLocation.lat = lat;
     this.myLocation.lng = lng;
-    this.myLocation.$key = this.user.$key;
+    this.myLocation.$key = user.$key;
     this.myLocation.dateTime = Date.now();
-    this.myLocation.uid = this.user.uid;
+    this.myLocation.uid = user.uid;
     // If user is logged in then send info to firebase
-    if (this.user.$key !== '') {
+    if (user.$key !== '') {
       this.locationsService.sendLocation(this.myLocation);
     }
   }
