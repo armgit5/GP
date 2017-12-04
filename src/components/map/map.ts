@@ -34,20 +34,22 @@ export class MapComponent implements OnInit, OnDestroy {
 
   locations: Location[];
   startLoc: Location;
+  lastLocation: Location = new Location('', 0, 0, '', '', 0);
   $geoLocationWatch: Subscription;
   aLine: any[];
   lastTime = Date.now();
   step = 10000;
   count = 0;
   intervalTime = 15000;
-  timeoutTime = 3000;
+  timeoutTime = 2000;
+  diffDist = 0.003;
 
   constructor(private locationsService: LocationsService,
-              private loadingCtrl: LoadingController,
-              private geolocation: Geolocation,
-              private toastCtrl: ToastController,
-              private authService: AuthService,
-              private platform: Platform) {
+    private loadingCtrl: LoadingController,
+    private geolocation: Geolocation,
+    private toastCtrl: ToastController,
+    private authService: AuthService,
+    private platform: Platform) {
 
     this.getALocationLine('rw07invSPBbGv1oY7hcViS83yrR2');
   }
@@ -102,28 +104,47 @@ export class MapComponent implements OnInit, OnDestroy {
       location => {
         console.log(location);
         this.getLocationAndUpload(location);
-    }).catch((error) => {
-      const toast = this.toastCtrl.create({
-        message: 'Could not get location, please pick it manually',
-        duration: 2500
+      }).catch((error) => {
+        const toast = this.toastCtrl.create({
+          message: 'Could not get location, please pick it manually',
+          duration: 2500
+        });
+        console.log('Error getting location', error);
+        toast.present();
       });
-      console.log('Error getting location', error);
-      toast.present();
-    });
+  }
+
+  // http://www.geodatasource.com/developers/javascript
+  private distance(lat1, lon1, lat2, lon2, unit) {
+    let radlat1 = Math.PI * lat1 / 180;
+    let radlat2 = Math.PI * lat2 / 180;
+    let theta = lon1 - lon2;
+    let radtheta = Math.PI * theta / 180;
+    let dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+    dist = Math.acos(dist);
+    dist = dist * 180 / Math.PI;
+    dist = dist * 60 * 1.1515;
+    if (unit == "K") { dist = dist * 1.609344 }
+    if (unit == "N") { dist = dist * 0.8684 }
+    return dist;
   }
 
   // https://stackoverflow.com/questions/8720334/geolocation-watchposition-breaks-geolocation-getcurrentposition
   private watchPosition() {
     let options = {
-      timeout: this.timeoutTime
-      // enableHighAccuracy: true
+      timeout: 1000
     };
     this.$geoLocationWatch = this.geolocation.watchPosition(options)
-    .filter((p) => p.coords !== undefined) //Filter Out Errors
-    .subscribe(position => {
-      console.log(position.coords.longitude + ' ' + position.coords.latitude);
-      this.getLocationAndUpload(position);
-    });
+      .filter((p) => p.coords !== undefined) //Filter Out Errors
+      .subscribe(position => {
+        let diffLat = Math.abs(this.lastLocation.lat - position.coords.latitude);
+        let diffLng = Math.abs(this.lastLocation.lng - position.coords.longitude);
+        if (diffLat >= this.diffDist || diffLng >= this.diffDist) {
+          this.getLocationAndUpload(position);
+          this.lastLocation.lat = position.coords.latitude;
+          this.lastLocation.lng = position.coords.longitude;
+        }
+      });
 
     setTimeout(() => {
       this.$geoLocationWatch.unsubscribe();
@@ -142,16 +163,12 @@ export class MapComponent implements OnInit, OnDestroy {
     // If user is logged in then send info to firebase
 
     if (user.$key !== '') {
-      let timeNow = Date.now();
-      console.log(timeNow, this.lastTime);
-      if ((timeNow - this.lastTime) >= this.step) {
-        console.log('time ok');
-        this.lastTime = timeNow;
-        this.locationsService.sendLocation(this.myLocation);
-      }
-
-      // console.log('sending location');
-      // this.locationsService.sendLocation(this.myLocation);
+      // let timeNow = Date.now();
+      // if ((timeNow - this.lastTime) >= this.step) {
+      //   this.lastTime = timeNow;
+      //   this.locationsService.sendLocation(this.myLocation);
+      // }
+      this.locationsService.sendLocation(this.myLocation);
     }
   }
 
