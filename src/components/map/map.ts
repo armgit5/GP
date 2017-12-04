@@ -38,6 +38,9 @@ export class MapComponent implements OnInit, OnDestroy {
   aLine: any[];
   lastTime = Date.now();
   step = 10000;
+  count = 0;
+  intervalTime = 15000;
+  timeoutTime = 3000;
 
   constructor(private locationsService: LocationsService,
               private loadingCtrl: LoadingController,
@@ -62,13 +65,16 @@ export class MapComponent implements OnInit, OnDestroy {
       // Okay, so the platform is ready and our plugins are available.
       // Here you can do any higher level native things you might need.
       this.onLocate();
-      this.watchPosition();
+      setInterval(() => {
+        this.watchPosition();
+      }, this.intervalTime);
+
+      // this.getCurrentPosition();
+      // setInterval(() => {
+      //   this.getCurrentPosition();
+      // }, 10000);
     });
-    // this.onLocate();
-    // this.getCurrentPosition();
-    // setTimeout(() => {
-    //   this.getCurrentPosition();
-    // }, 10000);
+
   }
 
   onLocate() {
@@ -81,34 +87,36 @@ export class MapComponent implements OnInit, OnDestroy {
         loader.dismiss();
         this.locations = locations;
         this.startLoc = locations[0];
-        console.log('this location, ', this.locations);
-
       }
     );
   }
 
-  // private getCurrentPosition() {
-  //   console.log('get cur position');
-  //   this.count += 1;
-  //   console.log(this.count);
-  //   this.geolocation.getCurrentPosition().then(
-  //     location => {
-  //       // console.log(location);
-  //       this.getLocationAndUpload(location);
-  //   }).catch((error) => {
-  //     const toast = this.toastCtrl.create({
-  //       message: 'Could not get location, please pick it manually',
-  //       duration: 2500
-  //     });
-  //     console.log('Error getting location', error);
-  //     toast.present();
-  //   });
-  // }
-
-  private watchPosition() {
+  private getCurrentPosition() {
     let options = {
       timeout: 10000,
       enableHighAccuracy: true
+    };
+    this.count += 1;
+    console.log(this.count);
+    this.geolocation.getCurrentPosition(options).then(
+      location => {
+        console.log(location);
+        this.getLocationAndUpload(location);
+    }).catch((error) => {
+      const toast = this.toastCtrl.create({
+        message: 'Could not get location, please pick it manually',
+        duration: 2500
+      });
+      console.log('Error getting location', error);
+      toast.present();
+    });
+  }
+
+  // https://stackoverflow.com/questions/8720334/geolocation-watchposition-breaks-geolocation-getcurrentposition
+  private watchPosition() {
+    let options = {
+      timeout: this.timeoutTime
+      // enableHighAccuracy: true
     };
     this.$geoLocationWatch = this.geolocation.watchPosition(options)
     .filter((p) => p.coords !== undefined) //Filter Out Errors
@@ -116,6 +124,10 @@ export class MapComponent implements OnInit, OnDestroy {
       console.log(position.coords.longitude + ' ' + position.coords.latitude);
       this.getLocationAndUpload(position);
     });
+
+    setTimeout(() => {
+      this.$geoLocationWatch.unsubscribe();
+    }, this.timeoutTime);
   }
 
   private getLocationAndUpload(position: Position) {
@@ -137,11 +149,16 @@ export class MapComponent implements OnInit, OnDestroy {
         this.lastTime = timeNow;
         this.locationsService.sendLocation(this.myLocation);
       }
+
+      // console.log('sending location');
+      // this.locationsService.sendLocation(this.myLocation);
     }
   }
 
   ngOnDestroy() {
-    this.$geoLocationWatch.unsubscribe();
+    if (this.$geoLocationWatch) {
+      this.$geoLocationWatch.unsubscribe();
+    }
   }
 
 }
