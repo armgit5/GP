@@ -7,7 +7,7 @@ import { Location } from '../models/location';
 @Injectable()
 export class LocationsService {
 
-    maxLinePoints = 50;
+    maxLinePoints = 100;
 
     constructor(private db: AngularFireDatabase) {
 
