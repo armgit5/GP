@@ -9,6 +9,15 @@ import { Subscription } from 'rxjs/Subscription';
 import { AuthService } from '../../services/auth';
 import { User } from '../../models/user';
 import { Point } from '../../models/point';
+import {
+  GoogleMaps,
+  GoogleMap,
+  GoogleMapsEvent,
+  GoogleMapOptions,
+  CameraPosition,
+  MarkerOptions,
+  Marker
+ } from '@ionic-native/google-maps';
 
 /**
  * Generated class for the MapComponent component.
@@ -44,12 +53,15 @@ export class MapComponent implements OnInit, OnDestroy {
   timeoutTime = 2000;
   diffDist = 0.003;
 
+  map: GoogleMap;
+
   constructor(private locationsService: LocationsService,
     private loadingCtrl: LoadingController,
     private geolocation: Geolocation,
     private toastCtrl: ToastController,
     private authService: AuthService,
-    private platform: Platform) {
+    private platform: Platform,
+    private googleMaps: GoogleMaps) {
 
     this.getALocationLine('rw07invSPBbGv1oY7hcViS83yrR2');
   }

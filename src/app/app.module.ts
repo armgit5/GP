@@ -7,7 +7,6 @@ import { StatusBar } from '@ionic-native/status-bar';
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
 import { MapComponent } from '../components/map/map';
-import { AgmCoreModule } from '@agm/core';
 import { LocationsService } from '../services/locations';
 
 import { AngularFireModule } from 'angularfire2';
@@ -19,6 +18,7 @@ import { SigninPage } from '../pages/signin/signin';
 import { SignupPage } from '../pages/signup/signup';
 import { TabsPage } from '../pages/tabs/tabs';
 import { AuthService } from '../services/auth';
+import { GoogleMaps } from '@ionic-native/google-maps';
 
 @NgModule({
   declarations: [
@@ -32,12 +32,9 @@ import { AuthService } from '../services/auth';
   imports: [
     BrowserModule,
     IonicModule.forRoot(MyApp),
-    AgmCoreModule.forRoot({
-      apiKey: 'AIzaSyC6AZjFBw3tWkMG5kyupbdOa5UNX3cAt7Q'
-    }),
     AngularFireModule.initializeApp(environment.firebase, 'gps-map-af92f'), // imports firebase/app needed for everything
     AngularFireDatabaseModule, // imports firebase/firestore, only needed for database features
-    AngularFireAuthModule,
+    AngularFireAuthModule
   ],
   bootstrap: [IonicApp],
   entryComponents: [
@@ -54,7 +51,8 @@ import { AuthService } from '../services/auth';
     {provide: ErrorHandler, useClass: IonicErrorHandler},
     LocationsService,
     Geolocation,
-    AuthService
+    AuthService,
+    GoogleMaps
   ]
 })
 export class AppModule {}
