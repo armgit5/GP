@@ -34,15 +34,15 @@ export class MapComponent implements OnInit, OnDestroy {
   text: string;
   myLocation: Location = {
     $key: '',
-    lat: 40.7624324,
-    lng: -73.9759827,
+    lat: 37.33367998,
+    lng: -122.05535361,
     uid: '',
     name: '',
     dateTime: 0
   }
 
   locations: Location[];
-  startLoc: Location;
+  startLoc: Location = new Location('', this.myLocation.lat, this.myLocation.lng, '', '', 0);
   lastLocation: Location = new Location('', 0, 0, '', '', 0);
   $geoLocationWatch: Subscription;
   aLine: any[];
@@ -80,8 +80,8 @@ export class MapComponent implements OnInit, OnDestroy {
         let mapOptions: GoogleMapOptions = {
           camera: {
             target: {
-              lat: 43.0741904,
-              lng: -89.3809802
+              lat: this.startLoc.lat,
+              lng: this.startLoc.lng
             },
             zoom: 18,
             tilt: 30
@@ -101,21 +101,21 @@ export class MapComponent implements OnInit, OnDestroy {
             console.log('Map is ready!');
 
             // Now you can use all methods safely.
+            let position = {
+              lat: this.startLoc.lat,
+              lng: this.startLoc.lng
+            };
+
+            let cameraPosition = {
+              target: position
+            }
+            this.map.moveCamera(cameraPosition);
             this.map.addMarker({
-                title: 'Ionic',
-                icon: 'blue',
-                animation: 'DROP',
-                position: {
-                  lat: 43.0741904,
-                  lng: -89.3809802
-                }
-              })
-              .then(marker => {
-                marker.on(GoogleMapsEvent.MARKER_CLICK)
-                  .subscribe(() => {
-                    alert('clicked');
-                  });
-              });
+              title: 'Arm',
+              icon: 'blue',
+              animation: 'DROP',
+              position: position
+            });
 
             this.map.setTrafficEnabled(true);
             this.map.setAllGesturesEnabled(true);
@@ -150,6 +150,21 @@ export class MapComponent implements OnInit, OnDestroy {
         loader.dismiss();
         this.locations = locations;
         this.startLoc = locations[0];
+        this.map.clear();
+        let position = {
+          lat: this.startLoc.lat,
+          lng: this.startLoc.lng
+        };
+        let cameraPosition = {
+          target: position
+        }
+        this.map.moveCamera(cameraPosition);
+        this.map.addMarker({
+          title: 'Arm',
+          icon: 'blue',
+          animation: 'DROP',
+          position: position
+        });
       }
     );
   }
