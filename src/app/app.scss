@@ -14,3 +14,17 @@
 // To declare rules for a specific mode, create a child rule
 // for the .md, .ios, or .wp mode classes. The mode class is
 // automatically applied to the <body> element in the app.
+
+html, body, .container.main {
+  font-family: "Helvetica Neue", "Helvetica", "Hiragino Kaku Gothic Pro", arial, sans-serif;
+  color: #211922;
+  font-size: 14px;
+  font-weight: 300;
+}
+
+.list-ios > .item-block:last-child, .list-ios > .item-block {
+  border-bottom: 0.55px solid #c8c7cc;
+  color: #211922;
+  font-size: 22px;
+  font-weight: 300;
+}
