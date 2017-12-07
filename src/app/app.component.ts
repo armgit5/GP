@@ -17,7 +17,7 @@ import { HomePage } from '../pages/home/home';
   templateUrl: 'app.html'
 })
 export class MyApp {
-  tabsPage: any = TabsPage;
+  tabsPage: any = HomePage;
   signinPage = SigninPage;
   signupPage = SignupPage;
   isAuthenticated = false;
@@ -49,7 +49,7 @@ export class MyApp {
         console.log(user.uid !== '');
         if (user.uid !== '') {
           this.isAuthenticated = true;
-          this.tabsPage = TabsPage;
+          this.tabsPage = HomePage;
         } else {
           this.isAuthenticated = false;
           this.tabsPage = SigninPage;

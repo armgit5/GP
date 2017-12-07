@@ -85,6 +85,9 @@ export class MapComponent implements OnInit, OnDestroy {
             },
             zoom: 18,
             tilt: 30
+          },
+          gestures: {
+            scroll: false
           }
         };
 
@@ -115,7 +118,7 @@ export class MapComponent implements OnInit, OnDestroy {
               });
 
             this.map.setTrafficEnabled(true);
-
+            this.map.setAllGesturesEnabled(true);
           });
       }
 
