@@ -16,7 +16,8 @@ import {
   GoogleMapOptions,
   CameraPosition,
   MarkerOptions,
-  Marker
+  Marker,
+  LatLng
 } from '@ionic-native/google-maps';
 
 /**
@@ -54,6 +55,7 @@ export class MapComponent implements OnInit, OnDestroy {
   diffDist = 0.003;
 
   map: GoogleMap;
+  marker: Marker;
 
   constructor(private locationsService: LocationsService,
     private loadingCtrl: LoadingController,
@@ -75,6 +77,7 @@ export class MapComponent implements OnInit, OnDestroy {
     );
   }
 
+  // https://forum.ionicframework.com/t/ionic-google-map-native-geolocation-plugin-update-userposition/100028
   loadMap() {
 
         let mapOptions: GoogleMapOptions = {
@@ -115,7 +118,9 @@ export class MapComponent implements OnInit, OnDestroy {
               icon: 'blue',
               animation: 'DROP',
               position: position
-            });
+            }).then(
+              marker => this.marker = marker
+            );
 
             this.map.setTrafficEnabled(true);
             this.map.setAllGesturesEnabled(true);
@@ -148,23 +153,29 @@ export class MapComponent implements OnInit, OnDestroy {
     this.locationsService.getLocations().subscribe(
       (locations: Location[]) => {
         loader.dismiss();
+
+
         this.locations = locations;
         this.startLoc = locations[0];
-        this.map.clear();
-        let position = {
-          lat: this.startLoc.lat,
-          lng: this.startLoc.lng
-        };
-        let cameraPosition = {
-          target: position
+        // this.map.clear();
+
+        if (this.marker) {
+          let position = {
+            lat: this.startLoc.lat,
+            lng: this.startLoc.lng
+          };
+          let cameraPosition = {
+            target: position
+          }
+
+          this.map.moveCamera(cameraPosition);
+          let userPosition = new LatLng(this.startLoc.lat, this.startLoc.lng);
+          this.marker.setPosition(userPosition);
+
         }
-        this.map.moveCamera(cameraPosition);
-        this.map.addMarker({
-          title: 'Arm',
-          icon: 'blue',
-          animation: 'DROP',
-          position: position
-        });
+
+        // let newMarker = new Marker(this.map, this.marker);
+        // this.map.addMarker(newMarker);
       }
     );
   }
