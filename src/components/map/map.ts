@@ -20,6 +20,8 @@ import {
   LatLng
 } from '@ionic-native/google-maps';
 
+declare var plugin;
+
 /**
  * Generated class for the MapComponent component.
  *
@@ -35,21 +37,16 @@ export class MapComponent implements OnInit, OnDestroy {
   text: string;
   myLocation: Location = {
     $key: '',
-    lat: 37.33367998,
-    lng: -122.05535361,
+    lat: 41.799240000000005, lng: 140.75875000000002,
     uid: '',
     name: '',
     dateTime: 0
-  }
+  };
+  lastLocation: Location;
 
-  locations: Location[];
-  startLoc: Location = new Location('', this.myLocation.lat, this.myLocation.lng, '', '', 0);
-  lastLocation: Location = new Location('', 0, 0, '', '', 0);
   $geoLocationWatch: Subscription;
   aLine: any[];
   lastTime = Date.now();
-  step = 10000;
-  count = 0;
   intervalTime = 15000;
   timeoutTime = 2000;
   diffDist = 0.003;
@@ -69,6 +66,18 @@ export class MapComponent implements OnInit, OnDestroy {
 
   }
 
+  ngOnInit() {
+    this.platform.ready().then(() => {
+      // Okay, so the platform is ready and our plugins are available.
+      // Here you can do any higher level native things you might need.
+      this.loadMap();
+      // setInterval(() => {
+      //   this.watchPosition();
+      // }, this.intervalTime);
+    });
+
+  }
+
   private getALocationLine($key: string) {
     this.locationsService.getALocationLine().subscribe(
       (points) => {
@@ -78,71 +87,96 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   // https://forum.ionicframework.com/t/ionic-google-map-native-geolocation-plugin-update-userposition/100028
-  loadMap() {
+  private loadMap() {
 
-        let mapOptions: GoogleMapOptions = {
-          camera: {
-            target: {
-              lat: this.startLoc.lat,
-              lng: this.startLoc.lng
-            },
-            zoom: 18,
-            tilt: 30
-          },
-          gestures: {
-            scroll: false
-          }
-        };
-
-        let element: HTMLElement = document.getElementById('map');
-
-        this.map = this.googleMaps.create(element, mapOptions);
-
-        // Wait the MAP_READY before using any methods.
-        this.map.one(GoogleMapsEvent.MAP_READY)
-          .then(() => {
-            console.log('Map is ready!');
-
-            // Now you can use all methods safely.
-            let position = {
-              lat: this.startLoc.lat,
-              lng: this.startLoc.lng
-            };
-
-            let cameraPosition = {
-              target: position
-            }
-            this.map.moveCamera(cameraPosition);
-            this.map.addMarker({
-              title: 'Arm',
-              icon: 'blue',
-              animation: 'DROP',
-              position: position
-            }).then(
-              marker => this.marker = marker
-            );
-
-            this.map.setTrafficEnabled(true);
-            this.map.setAllGesturesEnabled(true);
-          });
+    let mapOptions: GoogleMapOptions = {
+      camera: {
+        target: {
+          lat: this.myLocation.lat,
+          lng: this.myLocation.lng
+        },
+        zoom: 18,
+        tilt: 30
+      },
+      gestures: {
+        scroll: false
       }
+    };
 
-  ngOnInit() {
-    this.platform.ready().then(() => {
-      // Okay, so the platform is ready and our plugins are available.
-      // Here you can do any higher level native things you might need.
-      this.loadMap();
-      this.onLocate();
-      setInterval(() => {
-        this.watchPosition();
-      }, this.intervalTime);
+    let element: HTMLElement = document.getElementById('map');
+    this.map = this.googleMaps.create(element, mapOptions);
 
-      // this.getCurrentPosition();
-      // setInterval(() => {
-      //   this.getCurrentPosition();
-      // }, 10000);
-    });
+    // Wait the MAP_READY before using any methods.
+    this.map.one(GoogleMapsEvent.MAP_READY)
+      .then(() => {
+        console.log('Map is ready!');
 
+        // Now you can use all methods safely.
+        this.map.setTrafficEnabled(true);
+        this.map.setAllGesturesEnabled(true);
+
+        let GORYOKAKU_POINTS = [
+          {lat: 41.79883, lng: 140.75675},
+          {lat: 41.799240000000005, lng: 140.75875000000002},
+          {lat: 41.797650000000004, lng: 140.75905},
+          {lat: 41.79637, lng: 140.76018000000002},
+          {lat: 41.79567, lng: 140.75845},
+          {lat: 41.794470000000004, lng: 140.75714000000002},
+          {lat: 41.795010000000005, lng: 140.75611},
+          {lat: 41.79477000000001, lng: 140.75484},
+          {lat: 41.79576, lng: 140.75475},
+          {lat: 41.796150000000004, lng: 140.75364000000002},
+          {lat: 41.79744, lng: 140.75454000000002},
+          {lat: 41.79909000000001, lng: 140.75465}
+        ];
+
+        let positionList = new plugin.google.maps.BaseArrayClass(GORYOKAKU_POINTS);
+
+        GORYOKAKU_POINTS.forEach((position) => {
+          this.map.addMarker({
+            position: position
+          });
+        });
+
+        this.map.moveCamera({
+          target: GORYOKAKU_POINTS
+        });
+
+        // this.onLocate();
+      });
+  }
+
+  private addPoint(location: Location) {
+    let position = {
+      lat: location.lat,
+      lng: location.lng
+    };
+
+    let cameraPosition = {
+      target: position
+    }
+    this.map.moveCamera(cameraPosition);
+    this.map.addMarker({
+      title: 'Arm',
+      icon: 'blue',
+      animation: 'DROP',
+      position: position
+    }).then(
+      marker => this.marker = marker
+    );
+  }
+
+  private updatePoint(location: Location) {
+
+    let cameraPosition = {
+      target: {
+        lat: location.lat,
+        lng: location.lng
+      }
+    }
+    this.map.moveCamera(cameraPosition);
+    let userPosition = new LatLng(location.lat, location.lng);
+    this.marker.setPosition(userPosition);
   }
 
   onLocate() {
@@ -155,27 +189,17 @@ export class MapComponent implements OnInit, OnDestroy {
         loader.dismiss();
 
 
-        this.locations = locations;
-        this.startLoc = locations[0];
-        // this.map.clear();
+        // .then((markers) => {
+        //   var bounds = [];
+        //   GORYOKAKU_POINTS.forEach((POI) => {
+        //     bounds.push(POI);
+        //   });
 
-        if (this.marker) {
-          let position = {
-            lat: this.startLoc.lat,
-            lng: this.startLoc.lng
-          };
-          let cameraPosition = {
-            target: position
-          }
+        //   this.map.moveCamera({
+        //     target: bounds
+        //   });
+        // });
 
-          this.map.moveCamera(cameraPosition);
-          let userPosition = new LatLng(this.startLoc.lat, this.startLoc.lng);
-          this.marker.setPosition(userPosition);
-
-        }
-
-        // let newMarker = new Marker(this.map, this.marker);
-        // this.map.addMarker(newMarker);
       }
     );
   }
@@ -185,8 +209,6 @@ export class MapComponent implements OnInit, OnDestroy {
       timeout: 10000,
       enableHighAccuracy: true
     };
-    this.count += 1;
-    console.log(this.count);
     this.geolocation.getCurrentPosition(options).then(
       location => {
         console.log(location);
@@ -248,13 +270,7 @@ export class MapComponent implements OnInit, OnDestroy {
     this.myLocation.dateTime = Date.now();
     this.myLocation.uid = user.uid;
     // If user is logged in then send info to firebase
-
     if (user.$key !== '') {
-      // let timeNow = Date.now();
-      // if ((timeNow - this.lastTime) >= this.step) {
-      //   this.lastTime = timeNow;
-      //   this.locationsService.sendLocation(this.myLocation);
-      // }
       this.locationsService.sendLocation(this.myLocation);
     }
   }
