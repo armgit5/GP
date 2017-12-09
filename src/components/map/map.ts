@@ -115,34 +115,7 @@ export class MapComponent implements OnInit, OnDestroy {
         this.map.setTrafficEnabled(true);
         this.map.setAllGesturesEnabled(true);
 
-        let GORYOKAKU_POINTS = [
-          {lat: 41.79883, lng: 140.75675},
-          {lat: 41.799240000000005, lng: 140.75875000000002},
-          {lat: 41.797650000000004, lng: 140.75905},
-          {lat: 41.79637, lng: 140.76018000000002},
-          {lat: 41.79567, lng: 140.75845},
-          {lat: 41.794470000000004, lng: 140.75714000000002},
-          {lat: 41.795010000000005, lng: 140.75611},
-          {lat: 41.79477000000001, lng: 140.75484},
-          {lat: 41.79576, lng: 140.75475},
-          {lat: 41.796150000000004, lng: 140.75364000000002},
-          {lat: 41.79744, lng: 140.75454000000002},
-          {lat: 41.79909000000001, lng: 140.75465}
-        ];
-
-        let positionList = new plugin.google.maps.BaseArrayClass(GORYOKAKU_POINTS);
-
-        GORYOKAKU_POINTS.forEach((position) => {
-          this.map.addMarker({
-            position: position
-          });
-        });
-
-        this.map.moveCamera({
-          target: GORYOKAKU_POINTS
-        });
-
-        // this.onLocate();
+        this.onLocate();
       });
   }
 
@@ -188,17 +161,21 @@ export class MapComponent implements OnInit, OnDestroy {
       (locations: Location[]) => {
         loader.dismiss();
 
+        let bounds = [];
+        locations.forEach((location) => {
+          let latLng = {
+            lat: location.lat,
+            lng: location.lng
+          };
+          bounds.push(latLng);
+          this.map.addMarker({
+            position: latLng
+          });
+        });
 
-        // .then((markers) => {
-        //   var bounds = [];
-        //   GORYOKAKU_POINTS.forEach((POI) => {
-        //     bounds.push(POI);
-        //   });
-
-        //   this.map.moveCamera({
-        //     target: bounds
-        //   });
-        // });
+        this.map.moveCamera({
+          target: bounds
+        });
 
       }
     );
@@ -246,6 +223,8 @@ export class MapComponent implements OnInit, OnDestroy {
     this.$geoLocationWatch = this.geolocation.watchPosition(options)
       .filter((p) => p.coords !== undefined) //Filter Out Errors
       .subscribe(position => {
+
+        // Check to see if the position has moved. If so then upload location to firebase.
         let diffLat = Math.abs(this.lastLocation.lat - position.coords.latitude);
         let diffLng = Math.abs(this.lastLocation.lng - position.coords.longitude);
         if (diffLat >= this.diffDist || diffLng >= this.diffDist) {
