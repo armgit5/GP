@@ -121,21 +121,22 @@ export class MapComponent implements OnInit, OnDestroy {
 
         this.map.on(plugin.google.maps.event.MY_LOCATION_BUTTON_CLICK)
         .subscribe(() => {
-          this.map.getMyLocation()
-          .then(position => {
-            this.showCurrentPosition(position);
-          });
+          this.showMyLocation();
         });
 
+        this.showMyLocation();
         this.showAllLocations();
 
       });
   }
 
-  private showCurrentPosition(position: MyLocation) {
-    this.map.setCameraZoom(this.zoomLevel);
-    this.map.setCameraTilt(this.tiltLevel);
-    this.map.setCameraTarget(position.latLng);
+  private showMyLocation() {
+    this.map.getMyLocation()
+    .then(position => {
+      this.map.setCameraZoom(this.zoomLevel);
+      this.map.setCameraTilt(this.tiltLevel);
+      this.map.setCameraTarget(position.latLng);
+    });
   }
 
   private showAllLocations() {
@@ -148,6 +149,13 @@ export class MapComponent implements OnInit, OnDestroy {
           // this.showLoaderMessage(`${location.$key}/${ this.authService.user.$key}`);
           if (location.uid !== this.authService.user.uid) {
             this.map.addMarker({
+              icon: {
+                url: './assets/imgs/red-car.png',
+                size: {
+                  width: 40,
+                  height: 40
+                }
+              },
               position: {
                 lat: location.lat,
                 lng: location.lng
