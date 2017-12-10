@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { Location, TimeStampedLocation } from '../../models/location';
 import { LocationsService } from '../../services/locations';
-import { LoadingController, Platform } from 'ionic-angular';
+import { LoadingController, Platform, Loading } from 'ionic-angular';
 import { Geolocation } from '@ionic-native/geolocation';
 import { ToastController } from 'ionic-angular/components/toast/toast-controller';
 import { OnDestroy, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
@@ -17,7 +17,8 @@ import {
   CameraPosition,
   MarkerOptions,
   Marker,
-  LatLng
+  LatLng,
+  MyLocation
 } from '@ionic-native/google-maps';
 
 declare var plugin;
@@ -59,6 +60,7 @@ export class MapComponent implements OnInit, OnDestroy {
       scroll: false
     }
   };
+  private loader: Loading;
 
   $geoLocationWatch: Subscription;
   aLine: any[];
@@ -117,65 +119,45 @@ export class MapComponent implements OnInit, OnDestroy {
         this.map.setAllGesturesEnabled(true);
         this.map.setMyLocationEnabled(true);
 
-        // this.onLocate();
         this.map.on(plugin.google.maps.event.MY_LOCATION_BUTTON_CLICK)
         .subscribe(() => {
           this.map.getMyLocation()
           .then(position => {
-                this.map.setCameraZoom(this.zoomLevel);
-                this.map.setCameraTilt(this.tiltLevel);
-                this.map.setCameraTarget(position.latLng);
+            this.showCurrentPosition(position);
           });
         });
+
+        this.showAllLocations();
+
       });
   }
 
-  // onLocate() {
-  //   const loader = this.loadingCtrl.create({
-  //     content: 'Getting your Location...'
-  //   });
-  //   loader.present();
-  //   this.locationsService.getLocations().subscribe(
-  //     (locations: Location[]) => {
-  //       loader.dismiss();
+  private showCurrentPosition(position: MyLocation) {
+    this.map.setCameraZoom(this.zoomLevel);
+    this.map.setCameraTilt(this.tiltLevel);
+    this.map.setCameraTarget(position.latLng);
+  }
 
-  //       let bounds = [];
-  //       locations.forEach((location) => {
-  //         let latLng = {
-  //           lat: location.lat,
-  //           lng: location.lng
-  //         };
-  //         bounds.push(latLng);
-  //         this.map.addMarker({
-  //           position: latLng
-  //         });
-  //       });
+  private showAllLocations() {
 
-  //       this.map.moveCamera({
-  //         target: bounds
-  //       });
+    this.locationsService.getLocations().subscribe(
+      (locations: Location[]) => {
+        console.log(locations);
+        locations.forEach((location) => {
 
-  //     }
-  //   );
-  // }
+          // this.showLoaderMessage(`${location.$key}/${ this.authService.user.$key}`);
+          if (location.uid !== this.authService.user.uid) {
+            this.map.addMarker({
+              position: {
+                lat: location.lat,
+                lng: location.lng
+              }
+            });
+          }
 
-  private getCurrentPosition() {
-    let options = {
-      timeout: 10000,
-      enableHighAccuracy: true
-    };
-    this.geolocation.getCurrentPosition(options).then(
-      location => {
-        console.log(location);
-        this.getLocationAndUpload(location);
-      }).catch((error) => {
-        const toast = this.toastCtrl.create({
-          message: 'Could not get location, please pick it manually',
-          duration: 2500
         });
-        console.log('Error getting location', error);
-        toast.present();
-      });
+      }
+    );
   }
 
   // http://www.geodatasource.com/developers/javascript
@@ -262,6 +244,13 @@ export class MapComponent implements OnInit, OnDestroy {
     this.map.moveCamera(cameraPosition);
     let userPosition = new LatLng(location.lat, location.lng);
     this.marker.setPosition(userPosition);
+  }
+
+  private showLoaderMessage(message: string) {
+    this.loader = this.loadingCtrl.create({
+      content: message
+    });
+    this.loader.present();
   }
 
   ngOnDestroy() {
