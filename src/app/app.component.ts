@@ -37,17 +37,9 @@ export class MyApp {
       splashScreen.hide();
     });
 
-    console.log(this.authService.user.$key);
-    if (this.authService.user.$key === '') {
-      this.isAuthenticated = false;
-      this.tabsPage = SigninPage;
-    }
-
     this.authService.onUserUpdate.subscribe(
       (user: User) => {
-        console.log(user);
-        console.log(user.uid !== '');
-        if (user.uid !== '') {
+        if (user.$key !== '') {
           this.isAuthenticated = true;
           this.tabsPage = HomePage;
         } else {

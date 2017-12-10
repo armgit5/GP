@@ -2,8 +2,10 @@
 import { AngularFireAuth } from 'angularfire2/auth';
 import * as firebase from 'firebase/app';
 import { AngularFireDatabase } from 'angularfire2/database';
-import { Injectable, EventEmitter } from '@angular/core';
+import { Injectable, EventEmitter, ViewChild } from '@angular/core';
 import { User } from '../models/user';
+import { SigninPage } from '../pages/signin/signin';
+import { NavController } from 'ionic-angular';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +23,7 @@ export class AuthService {
           this.user.email = authState.email;
           this.findUserUIDByKey(authState.uid);
         }
+        this.onUserUpdate.emit(this.user);
       });
     }
 

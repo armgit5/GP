@@ -42,6 +42,7 @@ export class MapComponent implements OnInit, OnDestroy {
     name: '',
     dateTime: 0
   };
+  user: User;
   lastLocation: Location;
 
   $geoLocationWatch: Subscription;
@@ -75,7 +76,6 @@ export class MapComponent implements OnInit, OnDestroy {
       //   this.watchPosition();
       // }, this.intervalTime);
     });
-
   }
 
   private getALocationLine($key: string) {
@@ -117,39 +117,6 @@ export class MapComponent implements OnInit, OnDestroy {
 
         this.onLocate();
       });
-  }
-
-  private addPoint(location: Location) {
-    let position = {
-      lat: location.lat,
-      lng: location.lng
-    };
-
-    let cameraPosition = {
-      target: position
-    }
-    this.map.moveCamera(cameraPosition);
-    this.map.addMarker({
-      title: 'Arm',
-      icon: 'blue',
-      animation: 'DROP',
-      position: position
-    }).then(
-      marker => this.marker = marker
-    );
-  }
-
-  private updatePoint(location: Location) {
-
-    let cameraPosition = {
-      target: {
-        lat: location.lat,
-        lng: location.lng
-      }
-    }
-    this.map.moveCamera(cameraPosition);
-    let userPosition = new LatLng(location.lat, location.lng);
-    this.marker.setPosition(userPosition);
   }
 
   onLocate() {
@@ -223,7 +190,6 @@ export class MapComponent implements OnInit, OnDestroy {
     this.$geoLocationWatch = this.geolocation.watchPosition(options)
       .filter((p) => p.coords !== undefined) //Filter Out Errors
       .subscribe(position => {
-
         // Check to see if the position has moved. If so then upload location to firebase.
         let diffLat = Math.abs(this.lastLocation.lat - position.coords.latitude);
         let diffLng = Math.abs(this.lastLocation.lng - position.coords.longitude);
@@ -252,6 +218,39 @@ export class MapComponent implements OnInit, OnDestroy {
     if (user.$key !== '') {
       this.locationsService.sendLocation(this.myLocation);
     }
+  }
+
+  private addPoint(location: Location) {
+    let position = {
+      lat: location.lat,
+      lng: location.lng
+    };
+
+    let cameraPosition = {
+      target: position
+    }
+    this.map.moveCamera(cameraPosition);
+    this.map.addMarker({
+      title: 'Arm',
+      icon: 'blue',
+      animation: 'DROP',
+      position: position
+    }).then(
+      marker => this.marker = marker
+    );
+  }
+
+  private updatePoint(location: Location) {
+
+    let cameraPosition = {
+      target: {
+        lat: location.lat,
+        lng: location.lng
+      }
+    }
+    this.map.moveCamera(cameraPosition);
+    let userPosition = new LatLng(location.lat, location.lng);
+    this.marker.setPosition(userPosition);
   }
 
   ngOnDestroy() {
