@@ -44,6 +44,21 @@ export class MapComponent implements OnInit, OnDestroy {
   };
   user: User;
   lastLocation: Location;
+  private zoomLevel = 16;
+  private tiltLevel = 30;
+  private mapOptions: GoogleMapOptions = {
+    camera: {
+      target: {
+        lat: this.myLocation.lat,
+        lng: this.myLocation.lng
+      },
+      zoom: this.zoomLevel,
+      tilt: this.tiltLevel
+    },
+    gestures: {
+      scroll: false
+    }
+  };
 
   $geoLocationWatch: Subscription;
   aLine: any[];
@@ -89,22 +104,8 @@ export class MapComponent implements OnInit, OnDestroy {
   // https://forum.ionicframework.com/t/ionic-google-map-native-geolocation-plugin-update-userposition/100028
   private loadMap() {
 
-    let mapOptions: GoogleMapOptions = {
-      camera: {
-        target: {
-          lat: this.myLocation.lat,
-          lng: this.myLocation.lng
-        },
-        zoom: 18,
-        tilt: 30
-      },
-      gestures: {
-        scroll: false
-      }
-    };
-
     let element: HTMLElement = document.getElementById('map');
-    this.map = this.googleMaps.create(element, mapOptions);
+    this.map = this.googleMaps.create(element, this.mapOptions);
 
     // Wait the MAP_READY before using any methods.
     this.map.one(GoogleMapsEvent.MAP_READY)
@@ -114,39 +115,49 @@ export class MapComponent implements OnInit, OnDestroy {
         // Now you can use all methods safely.
         this.map.setTrafficEnabled(true);
         this.map.setAllGesturesEnabled(true);
+        this.map.setMyLocationEnabled(true);
 
-        this.onLocate();
+        // this.onLocate();
+        this.map.on(plugin.google.maps.event.MY_LOCATION_BUTTON_CLICK)
+        .subscribe(() => {
+          this.map.getMyLocation()
+          .then(position => {
+                this.map.setCameraZoom(this.zoomLevel);
+                this.map.setCameraTilt(this.tiltLevel);
+                this.map.setCameraTarget(position.latLng);
+          });
+        });
       });
   }
 
-  onLocate() {
-    const loader = this.loadingCtrl.create({
-      content: 'Getting your Location...'
-    });
-    loader.present();
-    this.locationsService.getLocations().subscribe(
-      (locations: Location[]) => {
-        loader.dismiss();
+  // onLocate() {
+  //   const loader = this.loadingCtrl.create({
+  //     content: 'Getting your Location...'
+  //   });
+  //   loader.present();
+  //   this.locationsService.getLocations().subscribe(
+  //     (locations: Location[]) => {
+  //       loader.dismiss();
 
-        let bounds = [];
-        locations.forEach((location) => {
-          let latLng = {
-            lat: location.lat,
-            lng: location.lng
-          };
-          bounds.push(latLng);
-          this.map.addMarker({
-            position: latLng
-          });
-        });
+  //       let bounds = [];
+  //       locations.forEach((location) => {
+  //         let latLng = {
+  //           lat: location.lat,
+  //           lng: location.lng
+  //         };
+  //         bounds.push(latLng);
+  //         this.map.addMarker({
+  //           position: latLng
+  //         });
+  //       });
 
-        this.map.moveCamera({
-          target: bounds
-        });
+  //       this.map.moveCamera({
+  //         target: bounds
+  //       });
 
-      }
-    );
-  }
+  //     }
+  //   );
+  // }
 
   private getCurrentPosition() {
     let options = {
